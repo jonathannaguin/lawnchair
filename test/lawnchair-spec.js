@@ -60,11 +60,11 @@ test('independent data stores', function() {
     QUnit.stop();
     QUnit.expect(5);
     var ts = (new Date).getTime(); // Use a variable value to make sure it's not junk from previous tests we're validating.
-
-    new Lawnchair({name: "store1"}, function(store1) {
+ts = 999;
+    new Lawnchair({name: "store1", columns: [{'name': 'quantity', 'type': 'number'}] }, function(store1) {
         store1.nuke(function(){
             store1.save({key: 'apple', quantity: 3}, function() {
-                new Lawnchair({name: "store2"}, function(store2) {
+                new Lawnchair({name: "store2", columns: [{'name': 'quantity', 'type': 'number'}]}, function(store2) {
                     store2.batch([{key: "pearshaped", quantity:ts},{key: "lemonfail", quantity:7}], function(){
                         store1.all(function(r) {
                             QUnit.equal(r.length, 1);
@@ -162,7 +162,7 @@ test('scoped variable in shorthand callback', function() {
     QUnit.stop();
 
     // FIXME fkn qunit being weird here... expect(1)
-    var tmp = new Lawnchair({name:'temps', record:'tmp'}, function() {
+    var tmp = new Lawnchair({name:'temps', record:'tmp', columns:[{'name': 'a', 'type': 'number'}] }, function() {
 		this.nuke(function() {
 			this.save({a:1}, function() {
 				this.each('ok(tmp, "this.record is passed to each callback"); QUnit.start()')
@@ -332,15 +332,15 @@ test( 'save with long key', function(){
     QUnit.expect(2);
 
     var prefix = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678901234567890";
-    var first  = {key:prefix+"-1", value:"first"};
-    var second = {key:prefix+"-2", value:"second"};
+    var first  = {key:prefix+"-1", val:"first"};
+    var second = {key:prefix+"-2", val:"second"};
 
     store.save(first, function(r){
         store.save(second, function(r){
             store.get(prefix+"-1", function(r){
-                QUnit.equal(r.value, "first");
+                QUnit.equal(r.val, "first");
                 store.get(prefix+"-2", function(r){
-                    QUnit.equal(r.value, "second");
+                    QUnit.equal(r.val, "second");
                     QUnit.start();
                 });
             });
@@ -451,13 +451,13 @@ test('batch large utf-8 dataset', function() {
   var largeBatchSet = [];
   for(var i = 0; i < setSize; i++) {
 	 var utf8text="Tyttebærsyltetøy 炒飯 寿司 김치 bœuf bourguignon ปอเปี๊ยะ μουσακάς водка ";
-	 largeBatchSet[i]={ key: "batchKey-" + i, value: utf8text + i };
+	 largeBatchSet[i]={ key: "batchKey-" + i, val: utf8text + i };
   }
 
   var done=0;
   var _check = function(key, value){
 	 store.get(key, function(r){
-		QUnit.equal(r.value, value, 'batch large value matches');
+		QUnit.equal(r.val, value, 'batch large value matches');
 		if(++done == setSize) QUnit.start();
 	 });
   };
@@ -466,7 +466,7 @@ test('batch large utf-8 dataset', function() {
 	 QUnit.equal(largeBatchSet.length, results.length, "batch large results object and input have same length");
 	 for(var i = 0; i < setSize; i++) {
 		var l = largeBatchSet[i];
-		_check(l.key, l.value);
+		_check(l.key, l.val);
 	 };
   });
 
@@ -528,7 +528,7 @@ test('get batch functionality', function() {
     QUnit.expect(3);
     QUnit.stop();
 
-    var t = [{key:'test-get'},{key:'test-get-1'}]
+    var t = [{key:'test-get'},{key:'test-get-1'}];
     store.batch(t, function() {
         this.get(['test-get','test-get-1'], function(r) {
             QUnit.equal(r[0].key, 'test-get', "get first object");
@@ -555,6 +555,61 @@ test('short callback syntax', function() {
     QUnit.expect(2);
 
     store.get('somekey', 'ok(true, "shorthand syntax callback gets evaled"); QUnit.deepEqual(this, store, "`this` should be scoped to the Lawnchair instance"); QUnit.start();');
+});
+
+test('all filter functionality - comparing strings', function() {
+    QUnit.expect(3);
+    QUnit.stop();
+
+    var t = [{key:'x', val: 'qwerty', age: 34},{key:'y', val: 'qwerty', age: 45}, {key:'z', val: 'diff', age: 34}];
+    store.batch(t, function() {
+
+        this.all(function(r){
+
+            r.sort(function(a, b){
+                return a.age - b.age;
+            });
+
+            QUnit.equal(r[0].key, 'x', "get first object");
+            QUnit.equal(r[1].key, 'y', "get second object");
+            QUnit.equal(r.length, 2, "should get two")
+            QUnit.start()
+
+        }, {filters: {val: 'qwerty'}});
+    }) 
+});
+
+test('all filter functionality - comparing numbers', function() {
+    QUnit.expect(2);
+    QUnit.stop();
+
+    var t = [{key:'x', val: 'qwerty', age: 34}, {key:'y', val: 'qwerty', age: 45}, {key:'z', val: 'diff', age: 34}];
+    store.batch(t, function() {
+
+        this.all(function(r){
+
+            QUnit.equal(r[0].key, 'y', "get the object");
+            QUnit.equal(r.length, 1, "should get one")
+            QUnit.start()
+
+        }, {filters: {age: 45}});
+    }) 
+});
+
+test('all filter functionality - none', function() {
+    QUnit.expect(1);
+    QUnit.stop();
+
+    var t = [{key:'x', val: 'qwerty', age: 34}, {key:'y', val: 'qwerty', age: 45}, {key:'z', val: 'diff', age: 34}];
+    store.batch(t, function() {
+
+        this.all(function(r){
+
+            QUnit.equal(r.length, 0, "should get zero")
+            QUnit.start()
+
+        }, {filters: {val: 11}});
+    }) 
 });
 
 module('exists()', {
