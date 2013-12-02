@@ -29,7 +29,7 @@ The `Lawnchair` api (or _application programming interface_):
     //   {
     //       filters: {age: 45}
     //   }
-    //
+    //Note: only supported in `dom`, `indexed-db` and `webkit-sqlite` adapters
     all (callback, options)
     
     // remove a doc or collection of em
