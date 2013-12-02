@@ -67,8 +67,16 @@
                 alert("adapter " + allowed[1] + " is not valid in this environment");
             }
 
+            var columns = [
+                {'name': 'quantity', 'type': 'number'},
+                {'name': 'name', 'type': 'string'},
+                {'name': 'age', 'type': 'number'},
+                {'name': 'field', 'type': 'string'},
+                {'name': 'val', 'type': 'string'}
+            ];
+
             // kickup the chair
-            store = new Lawnchair({name:'tests'}, function(){
+            store = new Lawnchair({name:'tests', columns: columns}, function(){
                 QUnit.start()
             });
 
