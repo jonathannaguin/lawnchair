@@ -24,7 +24,13 @@ The `Lawnchair` api (or _application programming interface_):
     each(callback)
     
     // returns all the objs to the callback as an array
-    all (callback)
+    // pass an object with a `filters` key to query the data:
+    //
+    //   {
+    //       filters: {age: 45}
+    //   }
+    //
+    all (callback, options)
     
     // remove a doc or collection of em
     remove (key|array, callback)
