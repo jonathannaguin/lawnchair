@@ -575,7 +575,9 @@ test('all filter functionality - comparing strings', function() {
             QUnit.equal(r.length, 2, "should get two")
             QUnit.start()
 
-        }, {filters: {val: 'qwerty'}});
+        }, {
+            filters: [{val: 'qwerty'}] 
+        });
     }) 
 });
 
@@ -592,7 +594,9 @@ test('all filter functionality - comparing numbers', function() {
             QUnit.equal(r.length, 1, "should get one")
             QUnit.start()
 
-        }, {filters: {age: 45}});
+        }, {
+            filters: [{age: 45}] 
+        });
     }) 
 });
 
@@ -608,7 +612,28 @@ test('all filter functionality - none', function() {
             QUnit.equal(r.length, 0, "should get zero")
             QUnit.start()
 
-        }, {filters: {val: 11}});
+        }, {
+            filters: [{age: 34}, {val: 'nonexistent'}] 
+        });
+    }) 
+});
+
+test('all filter functionality - not equal', function() {
+    QUnit.expect(2);
+    QUnit.stop();
+
+    var t = [{key:'x', val: 'qwerty', age: 34}, {key:'y', val: 'qwerty', age: 45}, {key:'z', val: 'diff', age: 34}];
+    store.batch(t, function() {
+
+        this.all(function(r){
+
+            QUnit.equal(r[0].key, 'z', "get the object");
+            QUnit.equal(r.length, 1, "should get one")
+            QUnit.start()
+
+        }, {
+            filters: [{age: 34}, {val: 'qwerty', eq: false}] 
+        });
     }) 
 });
 

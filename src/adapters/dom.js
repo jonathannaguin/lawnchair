@@ -163,16 +163,22 @@ Lawnchair.adapter('dom', (function () {
                 if (typeof options.filters == 'object') {
                     condition = function (value) {
 
-                        for (var property in options.filters) {
-                            if (options.filters.hasOwnProperty(property)) {
-                                if (!value.hasOwnProperty(property)) {
+                        for (var i = options.filters.length - 1; i >= 0; i--) {
+                            var element = options.filters[i];
+                            var attrs = Object.keys(element);
+                            delete attrs.eq;
+
+                            if (element.eq == false){
+                                if (value[attrs[0]] == element[attrs[0]]) {
                                     return false;
                                 }
-                                if (value[property] != options.filters[property]) {
+                            }else{
+                                if (value[attrs[0]] != element[attrs[0]]) {
                                     return false;
                                 }
                             }
-                        }
+
+                        };
 
                         return true;
                     };

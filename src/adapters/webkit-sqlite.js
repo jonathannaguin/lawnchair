@@ -256,13 +256,17 @@ Lawnchair.adapter('webkit-sqlite', (function () {
             var params = [];
 
             if (options && options.filters){
-                if ( typeof options.filters == 'string') {
-                    where += ' WHERE ' + options.filters;
-                } else if ( typeof options.filters == 'object') {
-                    where += ' WHERE ' + Object.keys(options.filters).map(function(col) {
-                                                        params.push(options.filters[col]);
-                                                        return '`' + col + '` = ?';
-                                                }).join(' AND ');
+                if ( typeof options.filters == 'object') {
+                    where += ' WHERE ' + options.filters.map(function(element){
+                                                                var attrs = Object.keys(element);
+                                                                delete attrs.eq;
+                                                                params.push(element[attrs[0]]);
+                                                                if (element.eq == false){
+                                                                      return '`' + attrs[0] + '` != ?';
+                                                                }else{
+                                                                      return '`' + attrs[0] + '` = ?';
+                                                                     }
+                                                            }).join(' AND ');
                 } 
             }
 
