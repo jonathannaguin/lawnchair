@@ -27,7 +27,7 @@ The `Lawnchair` api (or _application programming interface_):
     // pass an object with a `filters` key to query the data:
     //
     //   {
-    //       filters: {age: 45}
+    //       filters: [{age: 45, eq: true}, {name: 'Paul', eq: false}]
     //   }
     //Note: only supported in `dom`, `indexed-db` and `webkit-sqlite` adapters
     all (callback, options)
